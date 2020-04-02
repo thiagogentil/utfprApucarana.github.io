@@ -246,7 +246,7 @@ The **Map** tab was contributed by [Art Steinmetz](@adababbage) on this [pull re
 
 
 ```{r, echo=FALSE}
-# Define variable containing url
+# Define variable containing url asd
 url <- "https://pbs.twimg.com/profile_images/1241088175348613123/NfrGE61E_400x400.jpg"
 ```
 
