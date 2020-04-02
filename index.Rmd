@@ -232,11 +232,10 @@ Todos os dados utilizados nesse dashboard foram/são coletados diariamente no po
 
 **Agradecimentos**
 
-* Prof. Thiago Gentil Ramires -
-[UTFPR - Apucarana](https://portal.utfpr.edu.br/)
-*Prof. Ana Julia Righetto - 
+* Prof. Thiago Gentil Ramires - [UTFPR - Apucarana](https://portal.utfpr.edu.br/)
+* Prof. Ana Julia Righetto - 
 [UEL](https://ufsc.br/)
-*Prof. Luiz Ricardo Nakamura -
+* Prof. Luiz Ricardo Nakamura -
 [UFSC](https://ufsc.br/)
 
 
