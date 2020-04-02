@@ -3,6 +3,7 @@ title: "Covid19 Paraná - BR"
 output: 
   flexdashboard::flex_dashboard:
     orientation: rows
+    theme: flatly
     social: menu
     source_code: embed
     vertical_layout: fill
@@ -52,6 +53,12 @@ df_daily <- coronavirus %>%
 
 
 df1 <- coronavirus %>% dplyr::filter(date == max(date))
+
+
+#for map
+library(rgdal)
+estados <- readOGR(dsn = "estados_2010.shp", layer = "estados_2010") 
+neStates <- subset(estados, estados$sigla %in% c("PR"))
 
 ```
 
@@ -172,7 +179,11 @@ cv_data_for_plot <- coronavirus %>%
 
 cv_data_for_plot.split <- cv_data_for_plot %>% split(cv_data_for_plot$type)
 pal <- colorFactor(c("orange", "red"), domain = c("confirmed", "death"))
-map_object <- leaflet() %>% addProviderTiles(providers$Stamen.Toner)
+map_object <- leaflet(neStates) %>% addProviderTiles(providers$Stamen.Toner) %>% 
+  addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5,
+              opacity = 1.0, fillOpacity = 0.3,
+              highlightOptions = highlightOptions(color = "white", weight = 1,
+                                                  bringToFront = TRUE))
 
 names(cv_data_for_plot.split) %>%
   purrr::walk( function(df) {
@@ -196,8 +207,7 @@ names(cv_data_for_plot.split) %>%
 map_object %>%
   addLayersControl(
     overlayGroups = names(cv_data_for_plot.split),
-    options = layersControlOptions(collapsed = FALSE) 
-  )
+    options = layersControlOptions(collapsed = FALSE) ) 
 
 ```
 
