@@ -1,0 +1,254 @@
+---
+title: "Covid19 Paraná - BR"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    social: menu
+    source_code: embed
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+
+#------------------ Parameters ------------------
+# Set colors
+# https://www.w3.org/TR/css-color-3/#svg-color
+confirmed_color <- "purple"
+active_color <- "#1f77b4"
+recovered_color <- "forestgreen"
+death_color <- "red"
+
+
+#------------------ Data ------------------
+library(dplyr)
+load("coronavirus.RData")
+
+
+df <- coronavirus %>% 
+#  dplyr::filter(date == max(date)) %>%
+  dplyr::group_by(Province.State, type) %>%
+  dplyr::summarise(total = sum(cases)) %>%
+  tidyr::pivot_wider(names_from =  type, 
+                     values_from = total) %>%
+  dplyr::arrange(-confirmed) %>%
+  dplyr::ungroup() 
+
+df$Province.State=factor(df$Province.State,levels = c(as.character(df$Province.State)))
+
+
+
+#head(df)
+
+df_daily <- coronavirus %>% 
+  dplyr::group_by(date, type) %>%
+  dplyr::summarise(total = sum(cases, na.rm = TRUE)) %>%
+  tidyr::pivot_wider(names_from = type,
+                     values_from = total) %>%
+  dplyr::arrange(date) %>%
+  dplyr::ungroup() %>%
+  dplyr::mutate(confirmed_cum = cumsum(confirmed),
+                death_cum = cumsum(death))
+
+
+df1 <- coronavirus %>% dplyr::filter(date == max(date))
+
+```
+
+
+Resumo
+=======================================================================
+  Row
+-----------------------------------------------------------------------
+
+### Confirmados {.value-box}
+
+
+```{r}
+valueBox(value = paste(format(sum(df$confirmed), big.mark = ","), "", sep = " "), 
+         caption = "Total de casos confirmados no Paraná", 
+         icon = "fas fa-user-md", 
+         color = confirmed_color)
+```
+
+### Mortos {.value-box}
+
+
+```{r}
+
+valueBox(value = paste(format(sum(df$death, na.rm = TRUE), big.mark = ","), " (",
+                       round(100 * sum(df$death, na.rm = TRUE) / sum(df$confirmed), 1), 
+                       "%)", sep = ""),
+         caption = "Total de mortes no Paraná (mortalidade %)", 
+         icon = "fas fa-heart-broken", 
+         color = death_color)
+```
+
+
+Row
+-----------------------------------------------------------------------
+  
+### Casos por cidades (top 30)
+
+```{r daily_summary}
+
+plotly::plot_ly(data = df[1:20,], 
+                x = ~ Province.State, 
+                y = ~ confirmed, 
+                # text =  ~ confirmed, 
+                # textposition = 'auto',
+                type = "bar", 
+                name = "Active",
+                marker = list(color = active_color)) %>%
+  plotly::add_trace(y = ~ death, 
+                    # text =  ~ death, 
+                    # textposition = 'auto',
+                    name = "Death",
+                    marker = list(color = death_color)) %>%
+  plotly::layout(barmode = 'stack',
+                 yaxis = list(title = "Total de Casos"),
+#                              type = "log"),
+                 xaxis = list(title = ""),
+                 hovermode = "compare",
+                 margin =  list(
+                   # l = 60,
+                   # r = 40,
+                   b = 10,
+                   t = 10,
+                   pad = 2))
+
+```
+
+Row {data-width=400}
+-----------------------------------------------------------------------
+
+
+### Daily Cumulative Cases by Type
+
+```{r}
+plotly::plot_ly(data = df_daily) %>%
+  plotly::add_trace(x = ~ date,
+                    y = ~ confirmed_cum,
+                    type = "scatter",
+                    mode = "lines+markers",
+                    name = "Confirmados",
+                    line = list(color = confirmed_color),
+                    marker = list(color = confirmed_color)) %>%
+  plotly::add_trace(x = ~ date,
+                    y = ~ death_cum,
+                    type = "scatter",
+                    mode = 'lines+markers',
+                    name = "Mortes",
+                    line = list(color = death_color),
+                    marker = list(color = death_color)) %>%
+  plotly::layout(title = "",
+                 yaxis = list(title = "Acumulado de casos (PR)"),
+                 xaxis = list(title = "Data"),
+                 legend = list(x = 0.1, y = 0.9),
+                 hovermode = "compare")
+```
+
+
+
+Map
+=======================================================================
+
+ **Map**
+ 
+```{r}
+
+ 
+library(leaflet)
+library(leafpop)
+library(purrr)
+
+
+cv_data_for_plot <- coronavirus %>% 
+  dplyr::filter(cases > 0) %>% 
+  dplyr::group_by(Country.Region,Province.State,Lat,Long,type) %>% 
+  dplyr::summarise(cases = sum(cases)) %>% 
+  dplyr::mutate(log_cases = 2 * log(cases)) %>% 
+  dplyr::ungroup()
+
+cv_data_for_plot.split <- cv_data_for_plot %>% split(cv_data_for_plot$type)
+pal <- colorFactor(c("orange", "red"), domain = c("confirmed", "death"))
+map_object <- leaflet() %>% addProviderTiles(providers$Stamen.Toner)
+
+names(cv_data_for_plot.split) %>%
+  purrr::walk( function(df) {
+    map_object <<- map_object %>%
+      addCircleMarkers(data=cv_data_for_plot.split[[df]],
+                       lng=~Long, lat=~Lat,
+                       #                 label=~as.character(cases),
+                       color = ~pal(type),
+                       stroke = FALSE,
+                       fillOpacity = 0.8,
+                       radius = ~log_cases,
+                       popup =  leafpop::popupTable(cv_data_for_plot.split[[df]],
+                                                    feature.id = FALSE,
+                                                    row.numbers = FALSE,
+                                                    zcol=c("type","cases","Province.State")),
+                       group = df,
+                       #                 clusterOptions = markerClusterOptions(removeOutsideVisibleBounds = F),
+                       labelOptions = labelOptions(noHide = F,
+                                                   direction = 'auto'))
+  })
+map_object %>%
+  addLayersControl(
+    overlayGroups = names(cv_data_for_plot.split),
+    options = layersControlOptions(collapsed = FALSE) 
+  )
+
+```
+
+
+
+Sobre
+=======================================================================
+
+
+**Coronavirus Paraná Dashboard**
+
+Esse dashboard apresenta as atualizações diárias de casos de Covid19 do estado do Paraná. Este dashboard foi construido no software R utilizando o script do Rmarkdown. 
+
+The code behind the dashboard available [here](https://github.com/RamiKrispin/coronavirus_dashboard)
+
+**Data**
+
+Todos os dados utilizados nesse dashboard foram/são coletados diariamente no portal  [Brasil em dados abertos](https://brasil.io/home). 
+
+
+
+
+**Agradecimentos**
+
+* Prof. Thiago Gentil Ramires -
+[UTFPR - Apucarana](https://portal.utfpr.edu.br/)
+*Prof. Ana Julia Righetto - 
+[UEL](https://ufsc.br/)
+*Prof. Luiz Ricardo Nakamura -
+[UFSC](https://ufsc.br/)
+
+
+**Deployment and reproducibly**
+
+The dashboard was deployed to Github docs. If you wish to deploy and/or modify the dashboard on your Github account, you can apply the following steps:
+
+* Fork the dashboard [repository](https://github.com/RamiKrispin/coronavirus_dashboard), or
+* Clone it and push it to your Github package
+* Here some general guidance about deployment of flexdashboard on Github page - [link](https://github.com/pbatey/flexdashboard-example)
+
+For any question or feedback, you can either open an [issue](https://github.com/RamiKrispin/coronavirus_dashboard/issues) or contact me on [Twitter](https://twitter.com/Rami_Krispin).
+
+**Contribution** 
+
+The **Map** tab was contributed by [Art Steinmetz](@adababbage) on this [pull request](https://github.com/RamiKrispin/coronavirus_dashboard/pull/1). Thanks Art!
+
+
+```{r, echo=FALSE}
+# Define variable containing url
+url <- "https://pbs.twimg.com/profile_images/1241088175348613123/NfrGE61E_400x400.jpg"
+```
+
+<center><img src="`r url`"></center>
+
