@@ -163,8 +163,6 @@ Map
 **Map**
  
 ```{r}
-
- 
 library(leaflet)
 library(leafpop)
 library(purrr)
@@ -230,13 +228,13 @@ ddn=data.frame(ly,d)
 #m1=lm(ly~d)
 #max(df_daily$date)
 
-m1=gamlss(ly~pb(d),data=ddn)
+m1=gamlss(ly~pb(d),sigma.fo=~d,data=ddn)
 plot(m1)
 
 datanew=data.frame(d=c((max(d)):(max(d)+3)))
 datanew$y=round(exp(predict(m1,newdata = datanew)))
 datanew$date=c(max(df_daily$date)+c(0:3))
-datanew$y[1]<-last(df_daily$confirmed_cum)
+#datanew$y[1]<-last(df_daily$confirmed_cum)
 
 ```
 
@@ -296,12 +294,12 @@ Sobre
 
 **Coronavirus Paraná Dashboard**
 
-Esse dashboard apresenta as atualizações diárias de casos de Covid19 do estado do Paraná, o qual foi construido no software R utilizando o script do Rmarkdown. Os códigos utilizados aqui estão disponíveis [aqui.](https://github.com/thiagogentil/utfprApucarana.github.io) 
+Esse dashboard apresenta as atualizações diárias de casos de Covid19 do estado do Paraná, o qual foi construido no software R utilizando o script do Rmarkdown. Os códigos utilizados estão disponíveis [aqui.](https://github.com/thiagogentil/utfprApucarana.github.io) 
 
 
 **Data**
 
-Os dados utilizados nesse dashboard foram/são coletados diariamente no portal  [Brasil em dados abertos](https://brasil.io/home). A última atualização realizada foi 
+Os dados utilizados nesse dashboard foram/são coletados diariamente no portal  [Brasil em dados abertos](https://brasil.io/home). A última atualização realizada foi em
 ```{r}
 date()
 ```
