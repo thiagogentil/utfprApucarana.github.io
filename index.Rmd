@@ -160,7 +160,7 @@ plotly::plot_ly(data = df_daily) %>%
 Map
 =======================================================================
 
- **Map**
+**Map**
  
 ```{r}
 
@@ -212,6 +212,83 @@ map_object %>%
 ```
 
 
+Previsão
+=======================================================================
+
+**Previsão**
+
+```{r, include=FALSE}
+#REgression
+
+library(gamlss)
+
+ly=log(df_daily$confirmed_cum)
+d=order(df_daily$date)
+ddn=data.frame(ly,d)
+
+#a.exp(b*t) <=> log(a) + b*time = b0+b1*time
+#m1=lm(ly~d)
+#max(df_daily$date)
+
+m1=gamlss(ly~pb(d),data=ddn)
+plot(m1)
+
+datanew=data.frame(d=c((max(d)):(max(d)+3)))
+datanew$y=round(exp(predict(m1,newdata = datanew)))
+datanew$date=c(max(df_daily$date)+c(0:3))
+datanew$y[1]<-last(df_daily$confirmed_cum)
+
+```
+
+
+```{r}
+plotly::plot_ly(data = df_daily) %>%
+  plotly::add_trace(x = ~ date,
+                    y = ~ confirmed_cum,
+                    type = "scatter",
+                    mode = "lines+markers",
+                    name = "Confirmados",
+                    line = list(color = confirmed_color),
+                    marker = list(color = confirmed_color)) %>% 
+    plotly::add_trace(x = c(max(df_daily$date),max(df_daily$date)), 
+                      y =c(0,max(datanew$y)), 
+                    mode = "lines",name = 'Hoje',type = "scatter",
+                    line = list(shape = 'spline', color = 'steelblue1', width= 1, dash = 'dash'))%>%
+    plotly::add_trace(x = ~ datanew$date,
+                    y = ~ datanew$y,
+                    type = "scatter",
+                    mode = "lines",
+                    name = "Previsão",
+                    line = list(color = confirmed_color,shape = 'spline', width= 1, dash = 'dash'))%>% 
+  plotly::add_trace(x = ~ date,
+                    y = ~ death_cum,
+                    type = "scatter",
+                    mode = 'lines+markers',
+                    name = "Mortes",
+                    line = list(color = death_color),
+                    marker = list(color = death_color)) %>%
+  #  plotly::add_annotations(x = as.Date("2020-03-01"),
+  #                          y = 42716,
+  #                          text = paste("# of recovered cases surpass", 
+  #                                       "<br>", 
+  #                                       "the # of active cases"),
+  #                          xref = "x",
+  #                          yref = "y",
+  #                          arrowhead = 5,
+  #                          arrowhead = 3,
+  #                          arrowsize = 1,
+  #                          showarrow = TRUE,
+#                          ax = -10,
+#                          ay = 90) %>%
+plotly::layout(title = "",
+               yaxis = list(title = "Acumulado de casos (PR)"),
+               xaxis = list(title = "Data"),
+               legend = list(x = 0.1, y = 0.9),
+               hovermode = "compare")
+```
+
+
+
 
 Sobre
 =======================================================================
@@ -219,39 +296,26 @@ Sobre
 
 **Coronavirus Paraná Dashboard**
 
-Esse dashboard apresenta as atualizações diárias de casos de Covid19 do estado do Paraná. Este dashboard foi construido no software R utilizando o script do Rmarkdown. 
+Esse dashboard apresenta as atualizações diárias de casos de Covid19 do estado do Paraná, o qual foi construido no software R utilizando o script do Rmarkdown. Os códigos utilizados aqui estão disponíveis [aqui.](https://github.com/thiagogentil/utfprApucarana.github.io) 
 
-The code behind the dashboard available [here](https://github.com/RamiKrispin/coronavirus_dashboard)
 
 **Data**
 
-Todos os dados utilizados nesse dashboard foram/são coletados diariamente no portal  [Brasil em dados abertos](https://brasil.io/home). 
-
+Os dados utilizados nesse dashboard foram/são coletados diariamente no portal  [Brasil em dados abertos](https://brasil.io/home). A última atualização realizada foi 
+```{r}
+date()
+```
 
 
 
 **Agradecimentos**
 
 * Prof. Thiago Gentil Ramires - [UTFPR - Apucarana](https://portal.utfpr.edu.br/)
-* Prof. Ana Julia Righetto - 
-[UEL](https://ufsc.br/)
-* Prof. Luiz Ricardo Nakamura -
-[UFSC](https://ufsc.br/)
+* Prof. Ana Julia Righetto -    [UEL](https://uel.br/)
+* Prof. Luiz Ricardo Nakamura - [UFSC](https://ufsc.br/)
+* Prof. Rodrigo Rosseto Pescim - [UEL](https://uel.br/)
 
 
-**Deployment and reproducibly**
-
-The dashboard was deployed to Github docs. If you wish to deploy and/or modify the dashboard on your Github account, you can apply the following steps:
-
-* Fork the dashboard [repository](https://github.com/RamiKrispin/coronavirus_dashboard), or
-* Clone it and push it to your Github package
-* Here some general guidance about deployment of flexdashboard on Github page - [link](https://github.com/pbatey/flexdashboard-example)
-
-For any question or feedback, you can either open an [issue](https://github.com/RamiKrispin/coronavirus_dashboard/issues) or contact me on [Twitter](https://twitter.com/Rami_Krispin).
-
-**Contribution** 
-
-The **Map** tab was contributed by [Art Steinmetz](@adababbage) on this [pull request](https://github.com/RamiKrispin/coronavirus_dashboard/pull/1). Thanks Art!
 
 
 ```{r, echo=FALSE}
