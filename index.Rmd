@@ -60,6 +60,8 @@ library(rgdal)
 estados <- readOGR(dsn = "estados_2010.shp", layer = "estados_2010") 
 neStates <- subset(estados, estados$sigla %in% c("PR"))
 
+
+
 ```
 
 
@@ -130,7 +132,7 @@ Row {data-width=400}
 -----------------------------------------------------------------------
 
 
-### Daily Cumulative Cases by Type
+### Acumulado por dia
 
 ```{r}
 plotly::plot_ly(data = df_daily) %>%
@@ -212,8 +214,12 @@ map_object %>%
 
 Previsão
 =======================================================================
+Row
+-----------------------------------------------------------------------
 
-**Previsão**
+
+### Estado PR
+
 
 ```{r, include=FALSE}
 #REgression
@@ -229,17 +235,15 @@ ddn=data.frame(ly,d)
 #max(df_daily$date)
 
 m1=gamlss(ly~pb(d),sigma.fo=~d,data=ddn)
-plot(m1)
 
 datanew=data.frame(d=c((max(d)):(max(d)+3)))
 datanew$y=round(exp(predict(m1,newdata = datanew)))
 datanew$date=c(max(df_daily$date)+c(0:3))
-#datanew$y[1]<-last(df_daily$confirmed_cum)
 
 ```
 
 
-```{r}
+```{r, predct}
 plotly::plot_ly(data = df_daily) %>%
   plotly::add_trace(x = ~ date,
                     y = ~ confirmed_cum,
@@ -283,9 +287,100 @@ plotly::layout(title = "",
                xaxis = list(title = "Data"),
                legend = list(x = 0.1, y = 0.9),
                hovermode = "compare")
+
+
+```
+
+Row {data-width=400}
+-----------------------------------------------------------------------
+
+
+### 10 cidades com maior número de casos
+
+
+```{r, include=FALSE}
+#for prediction 2
+citis=df[1:20,1] #take biggest
+class(citis)<-'vector'
+cidade=confirmado=dia1=dia2=dia3=c()
+
+for(i in 1:10){
+  
+  covid=subset(coronavirus,coronavirus$Province.State==citis$Province.State[i])  
+  
+  df_daily2 <- covid %>% 
+    dplyr::group_by(date, type,) %>%
+    dplyr::summarise(total = sum(cases, na.rm = TRUE)) %>%
+    tidyr::pivot_wider(names_from = type,
+                       values_from = total) %>%
+    dplyr::arrange(date) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(confirmed_cum = cumsum(confirmed),
+                  death_cum = cumsum(death))
+  
+  df_daily2=df_daily2[,c(1,4,5)]
+  
+  ly=log(df_daily2$confirmed_cum)
+  d=order(df_daily2$date)
+  ddn=data.frame(ly,d)
+  
+  m1=gamlss(ly~d,data=ddn)
+  
+  datanew=data.frame(d=c((max(d)+1):(max(d)+3)))
+  datanew$y=round(exp(predict(m1,newdata = datanew)))
+  
+  cidade=c(cidade,as.character(citis$Province.State[i]))
+  confirmado=c(confirmado,last(df_daily2$confirmed_cum))
+  dia1=c(dia1,datanew$y[1])
+  dia2=c(dia2,datanew$y[2])
+  dia3=c(dia3,datanew$y[3])
+}
+
+
+dff<-data.frame(cidade,confirmado,dia1,dia2,dia3)
+dff<-data.frame(cidade,confirmado,dia1,dia2,dia3)
+dff$cidade=factor(dff$cidade,levels = c(as.character(dff$cidade)))
 ```
 
 
+```{r}
+plotly::plot_ly(data = dff, 
+                x = ~ cidade, 
+                y = ~ confirmado, 
+                # text =  ~ confirmed, 
+                # textposition = 'auto',
+                type = "bar", 
+                name = "Confirmados",
+                marker = list(color = 'dodgerblue')) %>%
+  plotly::add_trace(y = ~ dia1, 
+                    # text =  ~ death, 
+                    # textposition = 'auto',
+                    name = "Casos após 1 dia",
+                    marker = list(color = 'blue')) %>%
+  plotly::add_trace(y = ~ dia2, 
+                    # text =  ~ death, 
+                    # textposition = 'auto',
+                    name = "Casos após 2 dias",
+                    marker = list(color = 'mediumblue')) %>%
+  plotly::add_trace(y = ~ dia3, 
+                    # text =  ~ death, 
+                    # textposition = 'auto',
+                    name = "Casos após 3 dias",
+                    marker = list(color = 'navy')) %>%
+  plotly::layout(barmode = 'stack',
+                 yaxis = list(title = "Total de Casos"),
+                 #                              type = "log"),
+                 xaxis = list(title = ""),
+                 hovermode = "compare",
+                 margin =  list(
+                   # l = 60,
+                   # r = 40,
+                   b = 10,
+                   t = 10,
+                   pad = 2))
+```
+
+Row{data-width=400}
 
 
 Sobre
