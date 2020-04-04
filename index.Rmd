@@ -363,7 +363,7 @@ plotly::plot_ly(data = dff,
                     name = "Casos após 2 dias",
                     marker = list(color = 'mediumblue')) %>%
   plotly::add_trace(y = ~ dia3, 
-                    # text =  ~ death, 
+                    # text =  ~ death,  
                     # textposition = 'auto',
                     name = "Casos após 3 dias",
                     marker = list(color = 'navy')) %>%
@@ -399,17 +399,22 @@ Os dados utilizados nesse dashboard foram/são coletados diariamente no portal  
 date()
 ```
 
+**Modelos de regressão**
+Os modelos utilizados nesse dashboard devem ser utilizados com cautela, pois alguns municípios ainda possuem poucas informações, fazendo com que as previsões possuam um elevado intervalo de confiabilidade. 
 
 
 **Agradecimentos**
 
-* Prof. Thiago Gentil Ramires - [UTFPR - Apucarana](https://portal.utfpr.edu.br/)
-* Prof. Ana Julia Righetto -    [UEL](https://uel.br/)
-* Prof. Luiz Ricardo Nakamura - [UFSC](https://ufsc.br/)
-* Prof. Rodrigo Rosseto Pescim - [UEL](https://uel.br/)
+* Prof. [Thiago Gentil Ramires](http://lattes.cnpq.br/2106135845379527) - [UTFPR - Apucarana](https://portal.utfpr.edu.br/)
+* Profa. [Ana Julia Righetto](http://lattes.cnpq.br/5933607596600115) -    [UEL](https://uel.br/)
+* Prof. [Luiz Ricardo Nakamura](http://lattes.cnpq.br/1027138840914073) - [UFSC](https://ufsc.br/)
+* Prof. [Rodrigo Rossetto Pescim](http://lattes.cnpq.br/1508493202130646) - [UEL](https://uel.br/)
 
 
+Também fazem parte dessa pesquisa os alunos vinculados ao projeto de extensão Hemonúcleo Inteligente. 
 
+* Victor H. R. Moura - [UTFPR - Apucarana](https://portal.utfpr.edu.br/)
+* Maisa S. Pinheiro - [UTFPR - Apucarana](https://portal.utfpr.edu.br/)
 
 ```{r, echo=FALSE}
 # Define variable containing url asd
