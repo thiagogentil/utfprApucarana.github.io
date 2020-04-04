@@ -128,34 +128,6 @@ plotly::plot_ly(data = df[1:20,],
 
 ```
 
-Row {data-width=400}
------------------------------------------------------------------------
-
-
-### Acumulado por dia
-
-```{r}
-plotly::plot_ly(data = df_daily) %>%
-  plotly::add_trace(x = ~ date,
-                    y = ~ confirmed_cum,
-                    type = "scatter",
-                    mode = "lines+markers",
-                    name = "Confirmados",
-                    line = list(color = confirmed_color),
-                    marker = list(color = confirmed_color)) %>%
-  plotly::add_trace(x = ~ date,
-                    y = ~ death_cum,
-                    type = "scatter",
-                    mode = 'lines+markers',
-                    name = "Mortes",
-                    line = list(color = death_color),
-                    marker = list(color = death_color)) %>%
-  plotly::layout(title = "",
-                 yaxis = list(title = "Acumulado de casos (PR)"),
-                 xaxis = list(title = "Data"),
-                 legend = list(x = 0.1, y = 0.9),
-                 hovermode = "compare")
-```
 
 
 
