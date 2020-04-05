@@ -75,7 +75,7 @@ Resumo
 
 ```{r}
 valueBox(value = paste(format(max(df_daily$date), "%d/%m/%Y"), "", sep = ""), 
-         caption = "Total de casos confirmados no Paraná", 
+         caption = "Data da atualização dos dados", 
          icon = "fas fa-user-md", 
          color = 'thistle')
 ```
@@ -85,7 +85,7 @@ valueBox(value = paste(format(max(df_daily$date), "%d/%m/%Y"), "", sep = ""),
 
 ```{r}
 valueBox(value = paste(format(sum(df$confirmed), big.mark = ","), "", sep = " "), 
-         caption = "Dia atualizado", 
+         caption = "Total de casos confirmados no Paraná", 
          icon = "fas fa-heart-broken", 
          color = confirmed_color)
 ```
