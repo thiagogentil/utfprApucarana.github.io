@@ -70,15 +70,26 @@ Resumo
   Row
 -----------------------------------------------------------------------
 
+
+### Dia {.value-box}
+
+```{r}
+valueBox(value = paste(format(max(df_daily$date), "%d/%m/%Y"), "", sep = ""), 
+         caption = "Total de casos confirmados no Paraná", 
+         icon = "fas fa-user-md", 
+         color = 'thistle')
+```
+
 ### Confirmados {.value-box}
 
 
 ```{r}
 valueBox(value = paste(format(sum(df$confirmed), big.mark = ","), "", sep = " "), 
-         caption = "Total de casos confirmados no Paraná", 
-         icon = "fas fa-user-md", 
+         caption = "Dia atualizado", 
+         icon = "fas fa-heart-broken", 
          color = confirmed_color)
 ```
+
 
 ### Mortos {.value-box}
 
@@ -303,9 +314,9 @@ for(i in 1:10){
   
   cidade=c(cidade,as.character(citis$Province.State[i]))
   confirmado=c(confirmado,last(df_daily2$confirmed_cum))
-  dia1=c(dia1,datanew$y[1])
-  dia2=c(dia2,datanew$y[2])
-  dia3=c(dia3,datanew$y[3])
+  dia1=c(dia1,datanew$y[1]-last(df_daily2$confirmed_cum))
+  dia2=c(dia2,datanew$y[2]-datanew$y[1])
+  dia3=c(dia3,datanew$y[3]-datanew$y[2])
 }
 
 
@@ -334,11 +345,11 @@ plotly::plot_ly(data = dff,
                     # textposition = 'auto',
                     name = "Casos após 2 dias",
                     marker = list(color = 'mediumblue')) %>%
-  plotly::add_trace(y = ~ dia3, 
-                    # text =  ~ death,  
-                    # textposition = 'auto',
-                    name = "Casos após 3 dias",
-                    marker = list(color = 'navy')) %>%
+#  plotly::add_trace(y = ~ dia3, 
+#                    # text =  ~ death,  
+#                    # textposition = 'auto',
+#                    name = "Casos após 3 dias",
+#                    marker = list(color = 'navy')) %>%
   plotly::layout(barmode = 'stack',
                  yaxis = list(title = "Total de Casos"),
                  #                              type = "log"),
