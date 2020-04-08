@@ -76,7 +76,7 @@ Resumo
 ```{r}
 valueBox(value = paste(format(max(df_daily$date), "%d/%m/%Y"), "", sep = ""), 
          caption = "Data da atualização dos dados", 
-         icon = "fas fa-user-md", 
+         icon = "far fa-calendar-alt", 
          color = 'thistle')
 ```
 
@@ -84,9 +84,9 @@ valueBox(value = paste(format(max(df_daily$date), "%d/%m/%Y"), "", sep = ""),
 
 
 ```{r}
-valueBox(value = paste(format(sum(df$confirmed), big.mark = ","), "", sep = " "), 
+valueBox(value = paste(format(sum(df$confirmed), big.mark = ","), "", sep = " "),
          caption = "Total de casos confirmados no Paraná", 
-         icon = "fas fa-heart-broken", 
+         icon = "fas fa-user-md", 
          color = confirmed_color)
 ```
 
@@ -104,6 +104,16 @@ valueBox(value = paste(format(sum(df$death, na.rm = TRUE), big.mark = ","), " ("
          color = death_color)
 ```
 
+
+### Municípios com casos confirmados 
+
+```{r}
+municipios <- round((length(unique(df$Province.State))/399)*100,2)
+gauge(municipios, min = 0, max = 100, symbol = '%',
+       gaugeSectors(
+  success = c(0, 30), warning = c(31, 60), danger = c(61, 100)
+  ))
+```
 
 Row
 -----------------------------------------------------------------------
@@ -278,7 +288,7 @@ Row {data-width=400}
 -----------------------------------------------------------------------
 
 
-### 10 cidades com maior número de casos
+### 6 cidades com maior número de casos
 
 
 ```{r, include=FALSE}
@@ -287,7 +297,7 @@ citis=df[1:20,1] #take biggest
 class(citis)<-'vector'
 cidade=confirmado=dia1=dia2=dia3=c()
 
-for(i in 1:10){
+for(i in 1:6){
   
   covid=subset(coronavirus,coronavirus$Province.State==citis$Province.State[i])  
   
@@ -307,7 +317,7 @@ for(i in 1:10){
   d=order(df_daily2$date)
   ddn=data.frame(ly,d)
   
-  m1=gamlss(ly~d,data=ddn)
+  m1=gamlss(ly~pb(d),data=ddn)
   
   datanew=data.frame(d=c((max(d)+1):(max(d)+3)))
   datanew$y=round(exp(predict(m1,newdata = datanew)))
