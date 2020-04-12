@@ -181,13 +181,13 @@ map_object <- leaflet(neStates) %>% addProviderTiles(providers$Stamen.Toner) %>%
 names(cv_data_for_plot.split) %>%
   purrr::walk( function(df) {
     map_object <<- map_object %>%
-      addCircleMarkers(data=cv_data_for_plot.split[[df]],
+      addCircles(data=cv_data_for_plot.split[[df]],
                        lng=~Long, lat=~Lat,
                        #                 label=~as.character(cases),
                        color = ~pal(type),
                        stroke = FALSE,
                        fillOpacity = 0.8,
-                       radius = ~log_cases,
+                       radius = ~log_cases*1000,
                        popup =  leafpop::popupTable(cv_data_for_plot.split[[df]],
                                                     feature.id = FALSE,
                                                     row.numbers = FALSE,
@@ -374,6 +374,61 @@ plotly::plot_ly(data = dff,
 ```
 
 Row{data-width=400}
+
+
+Evolução
+=======================================================================
+
+
+```{r}
+library(ggplot2)
+library(ggmap)
+library(maps)
+library(ggthemes)
+library(raster)
+library(gganimate)
+library(gifski)
+
+
+acumulados <- coronavirus %>% 
+  dplyr::group_by(date,type, Province.State,Lat,Long) %>%
+  dplyr::summarise(total = sum(cases, na.rm = TRUE)) %>%
+  tidyr::pivot_wider(names_from = type,
+                     values_from = total) %>%
+  dplyr::ungroup() %>% 
+  dplyr::group_by(Province.State) %>%
+  dplyr::arrange(date) %>%
+  dplyr::mutate(confirmados = cumsum(confirmed),
+                death_cum = cumsum(death))%>%
+  dplyr::ungroup() 
+
+
+mymap <- getData("GADM", country = "brazil", level = 1)
+mymap <- subset(mymap, HASC_1=="BR.PR")
+temp <- fortify(mymap)
+
+
+load('mapa.RData')
+
+map=ggmap(map)+
+  geom_map(data = temp, map = temp,
+           aes(x = long, y = lat, group = group, map_id = id),
+           color = "black", size = 0,alpha=0.1) 
+
+
+
+#head(acumulados)
+
+map_frames <- map +
+  geom_point(aes(x = Long, y = Lat, size = confirmados),
+             data = acumulados, colour = 'orange', alpha = .5) +
+# Here comes the gganimate specific bits
+labs(title = '{closest_state}') +
+  transition_states(as.factor(date),1,1) +shadow_mark(past = T)
+
+animate(map_frames,nframes = length(unique(acumulados$date))*2,fps=3, detail = 1,renderer = gifski_renderer('test.gif'))
+
+```
 
 
 Sobre
