@@ -118,27 +118,27 @@ gauge(municipios, min = 0, max = 100, symbol = '%',
 Row
 -----------------------------------------------------------------------
   
-### Casos por cidades (top 30)
+### Casos por cidades (top 40)
 
 ```{r daily_summary}
 
-plotly::plot_ly(data = df[1:20,], 
-                x = ~ Province.State, 
-                y = ~ confirmed, 
+plotly::plot_ly(data = df[1:40,], 
+                y = ~ Province.State, 
+                x = ~ confirmed, 
                 # text =  ~ confirmed, 
                 # textposition = 'auto',
                 type = "bar", 
-                name = "Active",
+                name = "Casos",
                 marker = list(color = active_color)) %>%
-  plotly::add_trace(y = ~ death, 
+  plotly::add_trace(x = ~ death, 
                     # text =  ~ death, 
                     # textposition = 'auto',
-                    name = "Death",
+                    name = "Mortes",
                     marker = list(color = death_color)) %>%
   plotly::layout(barmode = 'stack',
-                 yaxis = list(title = "Total de Casos"),
-#                              type = "log"),
-                 xaxis = list(title = ""),
+                 xaxis = list(title = "Total de Casos"),
+                 #                              type = "log"),
+                 yaxis = list(title = ""),
                  hovermode = "compare",
                  margin =  list(
                    # l = 60,
@@ -146,7 +146,6 @@ plotly::plot_ly(data = df[1:20,],
                    b = 10,
                    t = 10,
                    pad = 2))
-
 ```
 
 
@@ -376,7 +375,7 @@ plotly::plot_ly(data = dff,
 Row{data-width=400}
 
 
-Evolução
+Evolução Estado
 =======================================================================
 
 
@@ -424,6 +423,61 @@ labs(title = '{closest_state}') +
   transition_states(as.factor(date),1,1) +shadow_mark(past = T)
 
 animate(map_frames,nframes = length(unique(acumulados$date))*2,fps=3, detail = 1,renderer = gifski_renderer('test.gif'),width = 850, height = 850)
+
+```
+
+
+Evolução Cidades
+=======================================================================
+
+
+```{r}
+
+### por cidades
+
+
+#quantidade aqui
+only40=df$Province.State[1:30]
+acumulados2=subset(acumulados,!is.na(match(acumulados$Province.State,only40)))
+
+acumulados2<-acumulados2 %>% group_by(date) %>% mutate(rank = row_number(-confirmados) * 1) %>%
+  ungroup()
+
+
+
+#plotting static plot
+static_plot<-ggplot(acumulados2,aes(rank,group=Province.State,fill=as.factor(Province.State),color=as.factor(Province.State))) +
+  geom_tile(aes(y = confirmados/2,
+                height = confirmados,
+                width = 0.9), alpha = 0.8, color = NA) +
+  geom_text(aes(y = 0, label = paste(Province.State, "")), vjust = 0.2, hjust = 1) +
+  geom_text(aes(y=confirmados,label = paste("",confirmados)), hjust=0)+
+  coord_flip(clip = "off", expand = TRUE) +
+  scale_y_continuous(labels = scales::comma) +
+  scale_x_reverse() +
+  guides(color = FALSE, fill = FALSE) +
+  theme_minimal() +
+  theme(
+    plot.title=element_text(size=25, hjust=0.5, face="bold", colour="grey", vjust=-1),
+    plot.subtitle=element_text(size=18, hjust=0.5, face="italic", color="grey"),
+    plot.caption =element_text(size=8, hjust=0.5, face="italic", color="grey"),
+    axis.ticks.y = element_blank(), 
+    axis.text.y = element_blank(), 
+    plot.margin = margin(1,1,1,4, "cm")
+  )
+
+
+
+plt<-static_plot + transition_states(states = date, transition_length = 4, state_length = 1) + 
+  ease_aes('cubic-in-out') +
+  #view_follow(fixed_x = TRUE) +
+  labs(title = 'Confirmados : {closest_state}', 
+       subtitle = 'Top 20 Cidades',
+       caption = 'Data',
+       x='',y='Total confirmados')
+
+
+animate(plt,200,fps = 6, width = 950, height = 750, renderer = gifski_renderer())
 
 ```
 
