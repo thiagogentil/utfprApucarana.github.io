@@ -222,12 +222,12 @@ library(gamlss)
 ly=log(df_daily$confirmed_cum)
 d=order(df_daily$date)
 ddn=data.frame(ly,d)
-
+#View(df_daily)
 #a.exp(b*t) <=> log(a) + b*time = b0+b1*time
 #m1=lm(ly~d)
 #max(df_daily$date)
 
-m1=gamlss(ly~pb(d),sigma.fo=~d,data=ddn)
+m1=gamlss(ly~pb(d),sigma.fo=~pb(d),data=ddn)
 
 datanew=data.frame(d=c((max(d)):(max(d)+3)))
 datanew$y=round(exp(predict(m1,newdata = datanew)))
@@ -416,17 +416,14 @@ map=ggmap(map)+
            color = "black", size = 0,alpha=0.1) 
 
 
-
-#head(acumulados)
-
 map_frames <- map +
   geom_point(aes(x = Long, y = Lat, size = confirmados),
-             data = acumulados, colour = 'orange', alpha = .5) +
+             data = acumulados, colour = 'orangered', alpha = .5) +
 # Here comes the gganimate specific bits
 labs(title = '{closest_state}') +
   transition_states(as.factor(date),1,1) +shadow_mark(past = T)
 
-animate(map_frames,nframes = length(unique(acumulados$date))*2,fps=3, detail = 1,renderer = gifski_renderer('test.gif'))
+animate(map_frames,nframes = length(unique(acumulados$date))*2,fps=3, detail = 1,renderer = gifski_renderer('test.gif'),width = 850, height = 850)
 
 ```
 
