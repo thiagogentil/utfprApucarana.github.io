@@ -67,7 +67,7 @@ neStates <- subset(estados, estados$sigla %in% c("PR"))
 
 Resumo
 =======================================================================
-  Row
+  Row {data-height=200}
 -----------------------------------------------------------------------
 
 
@@ -115,7 +115,7 @@ gauge(municipios, min = 0, max = 100, symbol = '%',
   ))
 ```
 
-Row
+Row {data-height=800}
 -----------------------------------------------------------------------
   
 ### Casos por cidades (top 40)
@@ -123,22 +123,22 @@ Row
 ```{r daily_summary}
 
 plotly::plot_ly(data = df[1:40,], 
-                y = ~ Province.State, 
-                x = ~ confirmed, 
+                x = ~ Province.State, 
+                y = ~ confirmed, 
                 # text =  ~ confirmed, 
                 # textposition = 'auto',
                 type = "bar", 
                 name = "Casos",
                 marker = list(color = active_color)) %>%
-  plotly::add_trace(x = ~ death, 
+  plotly::add_trace(y = ~ death, 
                     # text =  ~ death, 
                     # textposition = 'auto',
                     name = "Mortes",
                     marker = list(color = death_color)) %>%
   plotly::layout(barmode = 'stack',
-                 xaxis = list(title = "Total de Casos"),
+                 yaxis = list(title = "Total de Casos"),
                  #                              type = "log"),
-                 yaxis = list(title = ""),
+                 xaxis = list(title = ""),
                  hovermode = "compare",
                  margin =  list(
                    # l = 60,
@@ -287,7 +287,7 @@ Row {data-width=400}
 -----------------------------------------------------------------------
 
 
-### 6 cidades com maior número de casos
+### 10 cidades com maior número de casos
 
 
 ```{r, include=FALSE}
@@ -296,7 +296,8 @@ citis=df[1:20,1] #take biggest
 class(citis)<-'vector'
 cidade=confirmado=dia1=dia2=dia3=c()
 
-for(i in 1:6){
+#number os cities
+for(i in 1:10){
   
   covid=subset(coronavirus,coronavirus$Province.State==citis$Province.State[i])  
   
@@ -372,6 +373,8 @@ plotly::plot_ly(data = dff,
                    pad = 2))
 ```
 
+
+
 Row{data-width=400}
 
 
@@ -437,7 +440,7 @@ Evolução Cidades
 
 
 #quantidade aqui
-only40=df$Province.State[1:30]
+only40=df$Province.State[1:20]
 acumulados2=subset(acumulados,!is.na(match(acumulados$Province.State,only40)))
 
 acumulados2<-acumulados2 %>% group_by(date) %>% mutate(rank = row_number(-confirmados) * 1) %>%
@@ -450,7 +453,7 @@ static_plot<-ggplot(acumulados2,aes(rank,group=Province.State,fill=as.factor(Pro
   geom_tile(aes(y = confirmados/2,
                 height = confirmados,
                 width = 0.9), alpha = 0.8, color = NA) +
-  geom_text(aes(y = 0, label = paste(Province.State, "")), vjust = 0.2, hjust = 1) +
+  geom_text(aes(y = 0, label = paste(Province.State, "")), vjust = 0.2, hjust = 1,size = 6) +
   geom_text(aes(y=confirmados,label = paste("",confirmados)), hjust=0)+
   coord_flip(clip = "off", expand = TRUE) +
   scale_y_continuous(labels = scales::comma) +
@@ -482,6 +485,7 @@ animate(plt,200,fps = 6, width = 950, height = 750, renderer = gifski_renderer()
 ```
 
 
+
 Sobre
 =======================================================================
 
@@ -507,7 +511,7 @@ Os modelos utilizados nesse dashboard devem ser utilizados com cautela, pois alg
 * Prof. [Thiago Gentil Ramires](http://lattes.cnpq.br/2106135845379527) - [UTFPR - Apucarana](https://portal.utfpr.edu.br/)
 * Profa. [Ana Julia Righetto](http://lattes.cnpq.br/5933607596600115) -    [UEL](https://uel.br/)
 * Prof. [Luiz Ricardo Nakamura](http://lattes.cnpq.br/1027138840914073) - [UFSC](https://ufsc.br/)
-* Prof. [Rodrigo Rossetto Pescim](http://lattes.cnpq.br/1508493202130646) - [UEL](https://uel.br/)
+
 
 
 Também fazem parte dessa pesquisa os alunos vinculados ao projeto de extensão Hemonúcleo Inteligente. 
@@ -521,4 +525,28 @@ url <- "https://pbs.twimg.com/profile_images/1241088175348613123/NfrGE61E_400x40
 ```
 
 <center><img src="`r url`"></center>
+
+
+
+
+Ajudar
+=======================================================================
+
+A UTFPR Apucarana está empenhada produzindo equipamentos de proteção para doação na luta contra o COVID 19. Temos impressoras 3d e a mão de obra disponível, porém para finalizar precisamos do materiais.
+
+
+* Caso queira contribuir, precisamos de [filamento PLA 1,75mm,](https://3dfila.com.br/produto/filamento-pla-basic/)  podendo ser de qualquer fabricante ou cor, a ser entregue no endereço: **Rua Prof. João Cândido Ferreira, 1200, Centro, Apucarana, CEP 86809-140.** 
+* Caso a doação seje em dinheiro, por favor, entrar em contato com o Prof. Thalles (*thalesalmeida@utfpr.edu.br*). 
+
+Todo o material produzido será disponibilizado para o estado do PR. Juntos somos mais fortes.
+
+
+Row {data-width=700}
+--------------------------------------------------
+
+![](utfpr.jpg){width=50%}
+
+
+
+
 
